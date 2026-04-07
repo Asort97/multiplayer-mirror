@@ -15,7 +15,8 @@ public class ZoneManager : NetworkBehaviour
     [Header("Visual")]
     [SerializeField] private LineRenderer zoneCircle;
     [SerializeField] private LineRenderer nextZoneCircle;
-    [SerializeField] private int circleSegments = 64;
+    [SerializeField] private int circleSegments = 256;
+    [SerializeField] private int minimapLayer = 6;
 
     [SyncVar] private Vector2 currentCenter;
     [SyncVar] private float currentRadius;
@@ -70,6 +71,9 @@ public class ZoneManager : NetworkBehaviour
     {
         SetupCircle(zoneCircle, Color.cyan);
         SetupCircle(nextZoneCircle, new Color(1f, 1f, 1f, 0.3f));
+
+        if (nextZoneCircle != null)
+            nextZoneCircle.gameObject.layer = minimapLayer;
     }
 
     private void Update()
@@ -163,23 +167,26 @@ public class ZoneManager : NetworkBehaviour
     private void SetupCircle(LineRenderer lr, Color color)
     {
         if (lr == null) return;
-        lr.positionCount = circleSegments + 1;
+        lr.positionCount = circleSegments;
         lr.loop = true;
-        lr.startWidth = 0.1f;
-        lr.endWidth = 0.1f;
+        lr.startWidth = 0.15f;
+        lr.endWidth = 0.15f;
         lr.startColor = color;
         lr.endColor = color;
         lr.useWorldSpace = true;
+        lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        lr.receiveShadows = false;
+        lr.allowOcclusionWhenDynamic = false;
     }
 
     private void DrawCircle(LineRenderer lr, Vector2 center, float radius)
     {
         if (lr == null) return;
         lr.enabled = true;
-        lr.positionCount = circleSegments + 1;
-        for (int i = 0; i <= circleSegments; i++)
+        lr.positionCount = circleSegments;
+        for (int i = 0; i < circleSegments; i++)
         {
-            float angle = (float)i / circleSegments * 360f * Mathf.Deg2Rad;
+            float angle = (float)i / circleSegments * Mathf.PI * 2f;
             float x = center.x + Mathf.Cos(angle) * radius;
             float y = center.y + Mathf.Sin(angle) * radius;
             lr.SetPosition(i, new Vector3(x, y, 0f));

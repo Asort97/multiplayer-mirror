@@ -842,7 +842,8 @@ MonoBehaviour:
   damageTickInterval: 1
   zoneCircle: {fileID: 100148917}
   nextZoneCircle: {fileID: 1651624789}
-  circleSegments: 64
+  circleSegments: 256
+  minimapLayer: 6
 --- !u!114 &1305440584
 MonoBehaviour:
   m_ObjectHideFlags: 0
