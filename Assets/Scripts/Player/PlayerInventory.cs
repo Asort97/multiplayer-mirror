@@ -66,17 +66,47 @@ public class PlayerInventory : NetworkBehaviour
         string itemName = slotItemNames[activeSlot];
         int amount = slotAmmo[activeSlot];
 
-        if (droppedItemPrefab != null)
-        {
-            Vector3 dropPos = transform.position + transform.right * 1f;
-            GameObject dropped = Instantiate(droppedItemPrefab, dropPos, Quaternion.identity);
-            var pickup = dropped.GetComponent<ItemPickup>();
-            pickup.SetItem(itemName, amount);
-            NetworkServer.Spawn(dropped);
-        }
+        SpawnDroppedItem(itemName, amount);
 
         slotItemNames[activeSlot] = "";
         slotAmmo[activeSlot] = 0;
+    }
+
+    [Server]
+    public void DropAllItems(float radius = 1.5f)
+    {
+        for (int i = 0; i < SlotCount; i++)
+        {
+            if (string.IsNullOrEmpty(slotItemNames[i])) continue;
+            SpawnDroppedItem(slotItemNames[i], slotAmmo[i], radius);
+            slotItemNames[i] = "";
+            slotAmmo[i] = 0;
+        }
+
+        if (ammo9mm > 0)
+        {
+            SpawnDroppedItem("Ammo9mm", ammo9mm, radius);
+            ammo9mm = 0;
+        }
+        if (ammo12Shells > 0)
+        {
+            SpawnDroppedItem("Ammo12Shells", ammo12Shells, radius);
+            ammo12Shells = 0;
+        }
+    }
+
+    [Server]
+    private void SpawnDroppedItem(string itemName, int amount, float radius = 0f)
+    {
+        if (droppedItemPrefab == null) return;
+
+        Vector2 offset = radius > 0f ? Random.insideUnitCircle * radius : (Vector2)(transform.right * 1.25f);
+        Vector3 dropPos = transform.position + (Vector3)offset;
+
+        GameObject dropped = Instantiate(droppedItemPrefab, dropPos, Quaternion.identity);
+        var pickup = dropped.GetComponent<ItemPickup>();
+        pickup.SetItem(itemName, amount);
+        NetworkServer.Spawn(dropped);
     }
 
     [Server]

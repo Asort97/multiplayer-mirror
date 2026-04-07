@@ -26,6 +26,7 @@ public class PlayerHealth : NetworkBehaviour
 
         if (IsDead)
         {
+            GetComponent<PlayerInventory>().DropAllItems();
             RpcOnDeath();
         }
     }
