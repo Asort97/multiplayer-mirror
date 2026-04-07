@@ -19,11 +19,12 @@ public class CameraFollow : MonoBehaviour
     public Transform target;
     [SerializeField] private float smoothSpeed = 8f;
 
-    private void LateUpdate()
+    private void FixedUpdate()
     {
         if (target == null) return;
 
         Vector3 targetPos = new Vector3(target.position.x, target.position.y, -10f);
-        transform.position = Vector3.Lerp(transform.position, targetPos, smoothSpeed * Time.deltaTime);
+        transform.position = Vector3.Lerp(transform.position, targetPos, smoothSpeed * Time.fixedDeltaTime);
+
     }
 }
