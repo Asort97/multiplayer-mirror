@@ -32,6 +32,8 @@ public class Bullet : NetworkBehaviour
     {
         if (other.gameObject == owner) return;
         if (other.GetComponent<Bullet>() != null) return;
+        if (other.GetComponent<ItemPickup>() != null) return;
+        if (other.GetComponent<AmmoPickup>() != null) return;
 
         var health = other.GetComponent<PlayerHealth>();
         if (health != null)
