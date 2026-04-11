@@ -8,6 +8,12 @@ public class GameNetworkManager : NetworkManager
 
     private int spawnIndex;
 
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        maxConnections = 20;
+    }
+
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
         Vector3 spawnPos = Vector3.zero;
@@ -24,5 +30,8 @@ public class GameNetworkManager : NetworkManager
 
         GameObject player = Instantiate(playerPrefab, spawnPos, Quaternion.identity);
         NetworkServer.AddPlayerForConnection(conn, player);
+
+        if (MatchManager.Instance != null)
+            MatchManager.Instance.RegisterPlayer(player.GetComponent<NetworkIdentity>());
     }
 }

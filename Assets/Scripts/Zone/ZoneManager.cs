@@ -153,7 +153,7 @@ public class ZoneManager : NetworkBehaviour
 
             float dist = Vector2.Distance(conn.identity.transform.position, currentCenter);
             if (dist > currentRadius)
-                health.TakeDamage(dmg);
+                health.TakeDamage(dmg, null);
         }
     }
 

@@ -38,7 +38,8 @@ public class Bullet : NetworkBehaviour
         var health = other.GetComponent<PlayerHealth>();
         if (health != null)
         {
-            health.TakeDamage(damage);
+            var attackerIdentity = owner != null ? owner.GetComponent<NetworkIdentity>() : null;
+            health.TakeDamage(damage, attackerIdentity);
         }
 
         NetworkServer.Destroy(gameObject);

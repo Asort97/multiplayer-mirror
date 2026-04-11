@@ -73,13 +73,14 @@ public class PlayerCombat : NetworkBehaviour
 
     private void DoMeleeHit(int damage, float range)
     {
+        var myIdentity = GetComponent<NetworkIdentity>();
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, range);
         foreach (var hit in hits)
         {
             if (hit.gameObject == gameObject) continue;
             var health = hit.GetComponent<PlayerHealth>();
             if (health != null)
-                health.TakeDamage(damage);
+                health.TakeDamage(damage, myIdentity);
         }
     }
 

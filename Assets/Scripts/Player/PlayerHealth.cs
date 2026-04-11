@@ -18,7 +18,7 @@ public class PlayerHealth : NetworkBehaviour
     }
 
     [Server]
-    public void TakeDamage(int amount)
+    public void TakeDamage(int amount, NetworkIdentity attacker = null)
     {
         if (IsDead) return;
 
@@ -27,6 +27,8 @@ public class PlayerHealth : NetworkBehaviour
         if (IsDead)
         {
             GetComponent<PlayerInventory>().DropAllItems();
+            if (MatchManager.Instance != null)
+                MatchManager.Instance.OnPlayerKilled(GetComponent<NetworkIdentity>(), attacker);
             RpcOnDeath();
         }
     }
