@@ -18,9 +18,9 @@ public class PlayerHUD : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI[] slotAmmoTexts = new TextMeshProUGUI[5];
 
     [Header("Slot Colors")]
-    [SerializeField] private Color activeSlotColor = new Color(1f, 0.85f, 0.3f, 0.9f);
-    [SerializeField] private Color inactiveSlotColor = new Color(0.25f, 0.25f, 0.25f, 0.7f);
-    [SerializeField] private Color emptyIconColor = new Color(1f, 1f, 1f, 0.1f);
+    [SerializeField] private Color activeSlotColor = new Color(1f, 0.85f, 0.3f, 1f);
+    [SerializeField] private Color inactiveSlotColor = new Color(0.4f, 0.4f, 0.4f, 1f);
+    [SerializeField] private Color emptyIconColor = new Color(1f, 1f, 1f, 0f);
 
     [Header("Match Info")]
     [SerializeField] private TextMeshProUGUI aliveCountText;
