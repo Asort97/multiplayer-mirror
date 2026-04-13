@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using Mirror;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public class PlayerHUD : NetworkBehaviour
 {
@@ -11,6 +12,7 @@ public class PlayerHUD : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI ammoText;
     [SerializeField] private TextMeshProUGUI weaponNameText;
     [SerializeField] private TextMeshProUGUI ammoPoolText;
+    [SerializeField] private TMP_Text nicknameText;
 
     [Header("Slots")]
     [SerializeField] private Image[] slotImages = new Image[5];
@@ -37,6 +39,7 @@ public class PlayerHUD : NetworkBehaviour
     private PlayerHealth playerHealth;
     private PlayerInventory inventory;
     private bool deathShown;
+    private string lastShownNickname = "";
 
     private struct KillFeedEntry
     {
@@ -50,21 +53,53 @@ public class PlayerHUD : NetworkBehaviour
         playerHealth = GetComponent<PlayerHealth>();
         inventory = GetComponent<PlayerInventory>();
 
+        if (hudCanvas != null)
+            hudCanvas.SetActive(false);
+
         if (ammoPoolText == null && hudCanvas != null)
         {
             var t = hudCanvas.transform.Find("AmmoPoolText");
             if (t != null) ammoPoolText = t.GetComponent<TMPro.TextMeshProUGUI>();
         }
+
+        if (nicknameText == null && hudCanvas != null)
+        {
+            var t = hudCanvas.transform.Find("Nickname");
+            if (t != null) nicknameText = t.GetComponent<TMP_Text>();
+        }
     }
 
     public override void OnStartLocalPlayer()
     {
+        EnsureEventSystem();
+
         if (hudCanvas != null)
             hudCanvas.SetActive(true);
         if (deathPanel != null)
+        {
             deathPanel.SetActive(false);
+            var btn = deathPanel.transform.Find("LobbyButton");
+            if (btn != null)
+            {
+                var b = btn.GetComponent<Button>();
+                if (b != null) b.onClick.AddListener(ExitToLobby);
+            }
+        }
         if (winPanel != null)
+        {
             winPanel.SetActive(false);
+            var btn = winPanel.transform.Find("LobbyButton");
+            if (btn != null)
+            {
+                var b = btn.GetComponent<Button>();
+                if (b != null) b.onClick.AddListener(ExitToLobby);
+            }
+        }
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        UpdateNicknameLabel();
     }
 
     private void Update()
@@ -95,6 +130,8 @@ public class PlayerHUD : NetworkBehaviour
         {
             ammoPoolText.text = $"9mm: {inventory.ammo9mm}  |  12sh: {inventory.ammo12Shells}";
         }
+
+        UpdateNicknameLabel();
 
         for (int i = 0; i < PlayerInventory.SlotCount; i++)
         {
@@ -144,6 +181,8 @@ public class PlayerHUD : NetworkBehaviour
         if (!deathShown && playerHealth != null && playerHealth.IsDead)
         {
             deathShown = true;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
             if (deathPanel != null)
                 deathPanel.SetActive(true);
         }
@@ -178,18 +217,66 @@ public class PlayerHUD : NetworkBehaviour
 
     public void ShowWinScreen(string winnerName)
     {
+        if (playerHealth != null && playerHealth.IsDead)
+            return;
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         if (winPanel != null)
         {
             winPanel.SetActive(true);
             if (winText != null)
             {
-                if (!string.IsNullOrEmpty(winnerName) && playerHealth != null && !playerHealth.IsDead)
+                if (!string.IsNullOrEmpty(winnerName))
                     winText.text = "Победа!";
-                else if (!string.IsNullOrEmpty(winnerName))
-                    winText.text = winnerName + " победил";
                 else
                     winText.text = "Ничья";
             }
         }
+    }
+
+    public void ExitToLobby()
+    {
+        if (NetworkServer.active && NetworkClient.isConnected)
+            NetworkManager.singleton.StopHost();
+        else if (NetworkClient.isConnected)
+            NetworkManager.singleton.StopClient();
+    }
+
+    private void EnsureEventSystem()
+    {
+        if (EventSystem.current != null)
+            return;
+
+        var es = new GameObject("EventSystem");
+        es.AddComponent<EventSystem>();
+
+        var inputSystemModuleType = System.Type.GetType("UnityEngine.InputSystem.UI.InputSystemUIInputModule, Unity.InputSystem");
+        if (inputSystemModuleType != null)
+            es.AddComponent(inputSystemModuleType);
+        else
+            es.AddComponent<StandaloneInputModule>();
+    }
+
+    private void UpdateNicknameLabel()
+    {
+        if (nicknameText == null)
+            return;
+
+        string nick = "";
+        if (playerHealth != null && !string.IsNullOrWhiteSpace(playerHealth.playerName))
+            nick = playerHealth.playerName;
+        else if (!string.IsNullOrWhiteSpace(LobbyUI.LocalNickname))
+            nick = LobbyUI.LocalNickname;
+
+        if (string.IsNullOrWhiteSpace(nick))
+            nick = "Player";
+
+        if (nick == lastShownNickname)
+            return;
+
+        lastShownNickname = nick;
+        nicknameText.text = nick;
     }
 }

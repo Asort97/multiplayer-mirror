@@ -10,6 +10,7 @@ public class MatchManager : NetworkBehaviour
     public int aliveCount;
 
     private List<NetworkIdentity> alivePlayers = new List<NetworkIdentity>();
+    private Dictionary<NetworkIdentity, int> playerKills = new Dictionary<NetworkIdentity, int>();
     private bool matchEnded;
 
     private void Awake()
@@ -41,8 +42,15 @@ public class MatchManager : NetworkBehaviour
             aliveCount = alivePlayers.Count;
         }
 
-        string victimName = victim != null ? victim.gameObject.name : "???";
-        string killerName = attacker != null ? attacker.gameObject.name : "";
+        if (attacker != null)
+        {
+            if (!playerKills.ContainsKey(attacker))
+                playerKills[attacker] = 0;
+            playerKills[attacker]++;
+        }
+
+        string victimName = victim != null ? GetPlayerName(victim) : "???";
+        string killerName = attacker != null ? GetPlayerName(attacker) : "";
 
         if (attacker != null)
             RpcShowKillFeed(killerName + " убил " + victimName);
@@ -52,13 +60,45 @@ public class MatchManager : NetworkBehaviour
         if (!matchEnded && aliveCount == 1 && alivePlayers.Count == 1)
         {
             matchEnded = true;
-            string winnerName = alivePlayers[0].gameObject.name;
+            string winnerName = GetPlayerName(alivePlayers[0]);
             RpcAnnounceWinner(winnerName);
+            RecordAllStats(alivePlayers[0]);
         }
         else if (!matchEnded && aliveCount <= 0)
         {
             matchEnded = true;
             RpcAnnounceWinner("");
+            RecordAllStats(null);
+        }
+    }
+
+    [Server]
+    private string GetPlayerName(NetworkIdentity player)
+    {
+        if (player == null) return "???";
+        var health = player.GetComponent<PlayerHealth>();
+        if (health != null && !string.IsNullOrEmpty(health.playerName))
+            return health.playerName;
+        return player.gameObject.name;
+    }
+
+    [Server]
+    private void RecordAllStats(NetworkIdentity winner)
+    {
+        if (DatabaseManager.Instance == null) return;
+
+        foreach (var conn in NetworkServer.connections.Values)
+        {
+            if (conn.identity == null) continue;
+            var health = conn.identity.GetComponent<PlayerHealth>();
+            if (health == null || string.IsNullOrEmpty(health.playerName)) continue;
+
+            bool won = (winner != null && conn.identity == winner);
+            int kills = 0;
+            if (playerKills.ContainsKey(conn.identity))
+                kills = playerKills[conn.identity];
+
+            DatabaseManager.Instance.RecordMatchResult(health.playerName, won, kills);
         }
     }
 

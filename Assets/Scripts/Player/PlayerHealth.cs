@@ -8,6 +8,9 @@ public class PlayerHealth : NetworkBehaviour
     [SyncVar(hook = nameof(OnHealthChanged))]
     private int currentHealth;
 
+    [SyncVar]
+    public string playerName = "";
+
     public int MaxHealth => maxHealth;
     public int CurrentHealth => currentHealth;
     public bool IsDead => currentHealth <= 0;
@@ -15,6 +18,17 @@ public class PlayerHealth : NetworkBehaviour
     public override void OnStartServer()
     {
         currentHealth = maxHealth;
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        CmdSetName(LobbyUI.LocalNickname);
+    }
+
+    [Command]
+    private void CmdSetName(string name)
+    {
+        playerName = name;
     }
 
     [Server]

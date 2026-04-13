@@ -1,0 +1,3 @@
+<linker>
+  <assembly fullname="MySqlConnector" preserve="all"/>
+</linker>

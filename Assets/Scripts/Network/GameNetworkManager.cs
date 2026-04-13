@@ -12,6 +12,9 @@ public class GameNetworkManager : NetworkManager
     {
         base.OnStartServer();
         maxConnections = 20;
+
+        if (DatabaseManager.Instance != null)
+            DatabaseManager.Instance.Init();
     }
 
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
