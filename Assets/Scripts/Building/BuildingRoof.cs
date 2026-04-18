@@ -6,16 +6,44 @@ public class BuildingRoof : MonoBehaviour
     [SerializeField] private SpriteRenderer roofRenderer;
 
     private bool playerInside;
-    private float targetAlpha = 1f;
+    private SpriteRenderer[] roofRenderers;
+    private float[] baseAlphas;
+
+    private void Awake()
+    {
+        if (roofRenderer != null)
+            roofRenderers = roofRenderer.GetComponentsInChildren<SpriteRenderer>(true);
+        else
+            roofRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+
+        if ((roofRenderers == null || roofRenderers.Length == 0) && roofRenderer != null)
+            roofRenderers = new[] { roofRenderer };
+
+        if (roofRenderers == null)
+            roofRenderers = new SpriteRenderer[0];
+
+        baseAlphas = new float[roofRenderers.Length];
+        for (int i = 0; i < roofRenderers.Length; i++)
+        {
+            if (roofRenderers[i] != null)
+                baseAlphas[i] = roofRenderers[i].color.a;
+        }
+    }
 
     private void Update()
     {
-        if (roofRenderer == null) return;
+        if (roofRenderers == null || roofRenderers.Length == 0) return;
 
-        targetAlpha = playerInside ? 0f : 1f;
-        var c = roofRenderer.color;
-        c.a = Mathf.MoveTowards(c.a, targetAlpha, fadeSpeed * Time.deltaTime);
-        roofRenderer.color = c;
+        for (int i = 0; i < roofRenderers.Length; i++)
+        {
+            var currentRenderer = roofRenderers[i];
+            if (currentRenderer == null) continue;
+
+            float targetAlpha = playerInside ? 0f : baseAlphas[i];
+            var color = currentRenderer.color;
+            color.a = Mathf.MoveTowards(color.a, targetAlpha, fadeSpeed * Time.deltaTime);
+            currentRenderer.color = color;
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D other)

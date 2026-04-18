@@ -13,6 +13,9 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private TMP_InputField ipInput;
     [SerializeField] private Button hostButton;
     [SerializeField] private Button connectButton;
+    [SerializeField] private Button statsButton;
+    [SerializeField] private Button closeStatsButton;
+    [SerializeField] private GameObject statsPanel;
     [SerializeField] private TMP_Text statsText;
     [SerializeField] private TMP_Text statusText;
 
@@ -35,8 +38,13 @@ public class LobbyUI : MonoBehaviour
 
         hostButton.onClick.AddListener(OnHost);
         connectButton.onClick.AddListener(OnConnect);
+        if (statsButton != null)
+            statsButton.onClick.AddListener(OpenStats);
+        if (closeStatsButton != null)
+            closeStatsButton.onClick.AddListener(CloseStats);
 
         nicknameInput.onEndEdit.AddListener(OnNicknameChanged);
+        CloseStats();
         UpdateStats();
     }
 
@@ -106,6 +114,19 @@ public class LobbyUI : MonoBehaviour
         NetworkManager.singleton.networkAddress = ip;
         statusText.text = "Подключение...";
         NetworkManager.singleton.StartClient();
+    }
+
+    public void OpenStats()
+    {
+        UpdateStats();
+        if (statsPanel != null)
+            statsPanel.SetActive(true);
+    }
+
+    public void CloseStats()
+    {
+        if (statsPanel != null)
+            statsPanel.SetActive(false);
     }
 
     private string BuildInstanceKey()

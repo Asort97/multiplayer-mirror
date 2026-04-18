@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 654781becdafb664a8b0ba0c3c15fdce, type: 3}
   m_Name: Ammo12Shells
   m_EditorClassIdentifier: 
-  itemName: Ammo12Shells
+  itemName: Shotgun Ammo
   itemType: 3
   itemSprite: {fileID: 21300000, guid: 6c521da4bed23b64e8ff4ebef23f6fd0, type: 3}
   damage: 10

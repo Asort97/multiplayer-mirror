@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Knife
   itemType: 0
-  itemSprite: {fileID: 131449278, guid: 6eb16e372762d6b4cb708c44ebfab931, type: 3}
+  itemSprite: {fileID: 761100573506273824, guid: 73a2d6a8703dfce48be6422004553b58, type: 3}
   damage: 25
   attackRate: 0.4
   meleeRange: 1.2

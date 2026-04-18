@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 654781becdafb664a8b0ba0c3c15fdce, type: 3}
   m_Name: Ammo9mm
   m_EditorClassIdentifier: 
-  itemName: Ammo9mm
+  itemName: Pistol Ammo
   itemType: 3
-  itemSprite: {fileID: 21300000, guid: def6839459cd4ed49aacab3bb1cdb470, type: 3}
+  itemSprite: {fileID: 21300000, guid: 963c023c5edf48848b7840d2f00a8687, type: 3}
   damage: 10
   attackRate: 0.3
   meleeRange: 1
