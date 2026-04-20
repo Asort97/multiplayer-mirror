@@ -27,6 +27,11 @@ public class PlayerMovement : NetworkBehaviour
         moveInput.x = Input.GetAxisRaw("Horizontal");
         moveInput.y = Input.GetAxisRaw("Vertical");
 
+        if (moveInput.sqrMagnitude > 0.01f)
+            GameAudioManager.StartNamedLoop("footsteps");
+        else
+            GameAudioManager.StopCurrentLoop();
+
         RotateTowardsMouse();
     }
 
@@ -45,5 +50,11 @@ public class PlayerMovement : NetworkBehaviour
         Vector2 direction = (mouseWorldPos - transform.position).normalized;
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0f, 0f, angle);
+    }
+
+    private void OnDisable()
+    {
+        if (isLocalPlayer)
+            GameAudioManager.StopCurrentLoop();
     }
 }

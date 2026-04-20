@@ -52,7 +52,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -272,7 +272,13 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      G3-shadow_0: 3784439594473137093
+      G3-shadow_1: 5781830069969204215
+      G3-shadow_2: 2851272975398518560
+      G3-shadow_3: -1096656807543354368
+      G3-shadow_4: 6589011106716226338
+      G3-shadow_5: 8548996040772613130
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

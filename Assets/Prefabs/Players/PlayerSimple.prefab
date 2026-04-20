@@ -16,6 +16,8 @@ GameObject:
   - component: {fileID: 4342248039216355127}
   - component: {fileID: 4221370406245186981}
   - component: {fileID: 7197615772265265933}
+  - component: {fileID: -8994009522985062629}
+  - component: {fileID: 613558548149329756}
   m_Layer: 0
   m_Name: PlayerSimple
   m_TagString: Untagged
@@ -82,8 +84,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 4b66f21097323d44ab40669b2fb9c53d, type: 3}
-  m_Color: {r: 0, g: 1, b: 0, a: 1}
+  m_Sprite: {fileID: -7815787898135221602, guid: aa19b9cf67a7bfe46bfba3a0033f709b, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -238,3 +240,45 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
+--- !u!114 &-8994009522985062629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6552032831356608046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42bf7f534f35e5d429045dc27293ded6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  spriteRenderer: {fileID: 3440722427167824230}
+  animator: {fileID: 613558548149329756}
+  mainCharacterSet: {fileID: 11400000, guid: 2b7943621f24f9d489b0706a4f635b35, type: 2}
+  supportingCharacterSet: {fileID: 11400000, guid: 141dab05d423e2e46b6fe5b803f5003e, type: 2}
+  movementThreshold: 0.0001
+--- !u!95 &613558548149329756
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6552032831356608046}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 16cd6b3b70c8cb24089712eb8f8d0658, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

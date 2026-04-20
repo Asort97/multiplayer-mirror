@@ -41,6 +41,7 @@ public class PlayerInventory : NetworkBehaviour
 
         if (Input.GetKeyDown(KeyCode.Q))
         {
+            GameAudioManager.PlayNamed("drop");
             CmdDropItem();
         }
     }

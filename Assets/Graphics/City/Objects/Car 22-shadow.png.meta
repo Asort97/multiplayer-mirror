@@ -43,7 +43,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -197,7 +197,10 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Car 22-shadow_0: 6434482059045910623
+      Car 22-shadow_1: 364009929518734647
+      Car 22-shadow_2: 4694129598122744042
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -13,6 +13,15 @@ public class PlayerHUD : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI weaponNameText;
     [SerializeField] private TextMeshProUGUI ammoPoolText;
     [SerializeField] private TMP_Text nicknameText;
+    [SerializeField] private Button settingsButton;
+    [SerializeField] private GameObject settingsPanel;
+    [SerializeField] private Slider musicSlider;
+    [SerializeField] private Slider sfxSlider;
+    [SerializeField] private Button settingsCloseButton;
+    [SerializeField] private Button settingsQuitButton;
+    [SerializeField] private GameObject exitConfirmPanel;
+    [SerializeField] private Button exitYesButton;
+    [SerializeField] private Button exitNoButton;
 
     [Header("Slots")]
     [SerializeField] private Image[] slotImages = new Image[5];
@@ -35,6 +44,10 @@ public class PlayerHUD : NetworkBehaviour
     [SerializeField] private GameObject deathPanel;
     [SerializeField] private GameObject winPanel;
     [SerializeField] private TextMeshProUGUI winText;
+
+    [Header("Healing")]
+    [SerializeField] private GameObject healProgressRoot;
+    [SerializeField] private Image healProgressFill;
 
     private PlayerHealth playerHealth;
     private PlayerInventory inventory;
@@ -67,11 +80,13 @@ public class PlayerHUD : NetworkBehaviour
             var t = hudCanvas.transform.Find("Nickname");
             if (t != null) nicknameText = t.GetComponent<TMP_Text>();
         }
+
     }
 
     public override void OnStartLocalPlayer()
     {
         EnsureEventSystem();
+        GameAudioManager.EnsureInstance();
 
         if (hudCanvas != null)
             hudCanvas.SetActive(true);
@@ -82,7 +97,11 @@ public class PlayerHUD : NetworkBehaviour
             if (btn != null)
             {
                 var b = btn.GetComponent<Button>();
-                if (b != null) b.onClick.AddListener(ExitToLobby);
+                if (b != null)
+                {
+                    b.onClick.AddListener(GameAudioManager.PlayButtonClick);
+                    b.onClick.AddListener(ExitToLobby);
+                }
             }
         }
         if (winPanel != null)
@@ -92,19 +111,36 @@ public class PlayerHUD : NetworkBehaviour
             if (btn != null)
             {
                 var b = btn.GetComponent<Button>();
-                if (b != null) b.onClick.AddListener(ExitToLobby);
+                if (b != null)
+                {
+                    b.onClick.AddListener(GameAudioManager.PlayButtonClick);
+                    b.onClick.AddListener(ExitToLobby);
+                }
             }
         }
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        InitializeSettingsUi();
+        if (healProgressRoot != null)
+            healProgressRoot.SetActive(false);
         UpdateNicknameLabel();
     }
 
     private void Update()
     {
         if (!isLocalPlayer) return;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (exitConfirmPanel != null && exitConfirmPanel.activeSelf)
+                HideExitConfirm();
+            else if (settingsPanel != null && settingsPanel.activeSelf)
+                HideSettings();
+            else
+                ShowSettings();
+        }
 
         if (healthBar != null && playerHealth != null)
         {
@@ -222,6 +258,8 @@ public class PlayerHUD : NetworkBehaviour
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        GameAudioManager.StopCurrentLoop();
+        GameAudioManager.PlayNamed("victory");
 
         if (winPanel != null)
         {
@@ -257,6 +295,112 @@ public class PlayerHUD : NetworkBehaviour
             es.AddComponent(inputSystemModuleType);
         else
             es.AddComponent<StandaloneInputModule>();
+    }
+
+    private void InitializeSettingsUi()
+    {
+        if (settingsButton == null || settingsPanel == null || musicSlider == null || sfxSlider == null || settingsCloseButton == null || settingsQuitButton == null || exitConfirmPanel == null || exitYesButton == null || exitNoButton == null)
+        {
+            Debug.LogWarning("PlayerHUD settings references are not fully assigned in MainPlayer prefab.");
+            return;
+        }
+
+        settingsPanel.SetActive(false);
+        exitConfirmPanel.SetActive(false);
+
+        var audioManager = GameAudioManager.EnsureInstance();
+        musicSlider.SetValueWithoutNotify(audioManager.MusicVolume);
+        sfxSlider.SetValueWithoutNotify(audioManager.SfxVolume);
+
+        musicSlider.onValueChanged.RemoveAllListeners();
+        musicSlider.onValueChanged.AddListener(audioManager.SetMusicVolume);
+        sfxSlider.onValueChanged.RemoveAllListeners();
+        sfxSlider.onValueChanged.AddListener(audioManager.SetSfxVolume);
+
+        settingsButton.onClick.RemoveAllListeners();
+        settingsButton.onClick.AddListener(GameAudioManager.PlayButtonClick);
+        settingsButton.onClick.AddListener(ToggleSettings);
+
+        settingsCloseButton.onClick.RemoveAllListeners();
+        settingsCloseButton.onClick.AddListener(GameAudioManager.PlayButtonClick);
+        settingsCloseButton.onClick.AddListener(HideSettings);
+
+        settingsQuitButton.onClick.RemoveAllListeners();
+        settingsQuitButton.onClick.AddListener(GameAudioManager.PlayButtonClick);
+        settingsQuitButton.onClick.AddListener(ShowExitConfirm);
+
+        exitYesButton.onClick.RemoveAllListeners();
+        exitYesButton.onClick.AddListener(GameAudioManager.PlayButtonClick);
+        exitYesButton.onClick.AddListener(QuitGame);
+
+        exitNoButton.onClick.RemoveAllListeners();
+        exitNoButton.onClick.AddListener(GameAudioManager.PlayButtonClick);
+        exitNoButton.onClick.AddListener(HideExitConfirm);
+    }
+
+    private void ToggleSettings()
+    {
+        if (settingsPanel == null)
+            return;
+
+        if (settingsPanel.activeSelf)
+            HideSettings();
+        else
+            ShowSettings();
+    }
+
+    private void ShowSettings()
+    {
+        if (settingsPanel == null)
+            return;
+
+        settingsPanel.SetActive(true);
+        HideExitConfirm();
+    }
+
+    private void HideSettings()
+    {
+        if (settingsPanel == null)
+            return;
+
+        HideExitConfirm();
+        settingsPanel.SetActive(false);
+    }
+
+    private void ShowExitConfirm()
+    {
+        if (settingsPanel == null || exitConfirmPanel == null)
+            return;
+
+        settingsPanel.SetActive(true);
+        exitConfirmPanel.SetActive(true);
+    }
+
+    private void HideExitConfirm()
+    {
+        if (exitConfirmPanel == null)
+            return;
+
+        exitConfirmPanel.SetActive(false);
+    }
+
+    private void QuitGame()
+    {
+        if (NetworkServer.active && NetworkClient.isConnected)
+            NetworkManager.singleton.StopHost();
+        else if (NetworkClient.isConnected)
+            NetworkManager.singleton.StopClient();
+
+        Application.Quit();
+    }
+
+    public void SetHealProgress(float progress, bool visible)
+    {
+        if (healProgressRoot == null || healProgressFill == null)
+            return;
+
+        healProgressRoot.SetActive(visible);
+        healProgressFill.fillAmount = Mathf.Clamp01(progress);
     }
 
     private void UpdateNicknameLabel()

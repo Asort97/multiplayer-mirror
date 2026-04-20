@@ -1,0 +1,15 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f72256bfe2c3d7843a0d8b6ec5b40ad5, type: 3}
+  m_Name: SupportingCharacterAnimationSet
+  m_EditorClassIdentifier: 
+  controller: {fileID: 9100000, guid: efdec9957eb4b974392eb82c45a92020, type: 2}

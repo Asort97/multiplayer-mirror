@@ -26,5 +26,5 @@ MonoBehaviour:
   pelletCount: 1
   spreadAngle: 30
   healAmount: 25
-  useTime: 1
+  useTime: 3
   ammoAmount: 15

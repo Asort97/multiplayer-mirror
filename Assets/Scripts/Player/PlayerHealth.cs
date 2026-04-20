@@ -61,8 +61,21 @@ public class PlayerHealth : NetworkBehaviour
     [ClientRpc]
     private void RpcOnDeath()
     {
-        GetComponent<SpriteRenderer>().enabled = false;
-        GetComponent<Collider2D>().enabled = false;
+        GameAudioManager.PlayNamed("death");
+
+        var spriteAnimator = GetComponent<PlayerSpriteAnimator>();
+        if (spriteAnimator != null)
+            spriteAnimator.PlayDeath();
+        else
+            GetComponent<SpriteRenderer>().enabled = false;
+
+        var collider2d = GetComponent<Collider2D>();
+        if (collider2d != null)
+            collider2d.enabled = false;
+
+        var rigidbody2d = GetComponent<Rigidbody2D>();
+        if (rigidbody2d != null)
+            rigidbody2d.linearVelocity = Vector2.zero;
 
         if (isLocalPlayer)
         {

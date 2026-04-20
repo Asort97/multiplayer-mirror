@@ -60,14 +60,15 @@ public class MatchManager : NetworkBehaviour
         if (!matchEnded && aliveCount == 1 && alivePlayers.Count == 1)
         {
             matchEnded = true;
-            string winnerName = GetPlayerName(alivePlayers[0]);
-            RpcAnnounceWinner(winnerName);
+            NetworkIdentity winner = alivePlayers[0];
+            string winnerName = GetPlayerName(winner);
+            RpcAnnounceWinner(winner != null ? winner.netId : 0u, winnerName);
             RecordAllStats(alivePlayers[0]);
         }
         else if (!matchEnded && aliveCount <= 0)
         {
             matchEnded = true;
-            RpcAnnounceWinner("");
+            RpcAnnounceWinner(0u, "");
             RecordAllStats(null);
         }
     }
@@ -111,8 +112,11 @@ public class MatchManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcAnnounceWinner(string winnerName)
+    private void RpcAnnounceWinner(uint winnerNetId, string winnerName)
     {
+        if (winnerNetId != 0u && (NetworkClient.localPlayer == null || NetworkClient.localPlayer.netId != winnerNetId))
+            return;
+
         var hud = FindLocalHUD();
         if (hud != null)
             hud.ShowWinScreen(winnerName);

@@ -68,8 +68,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: asort killed malik
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 64e2fbbbfe5e23540b3bd4624ba7ea29, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 64e2fbbbfe5e23540b3bd4624ba7ea29, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -157,3 +157,4 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+

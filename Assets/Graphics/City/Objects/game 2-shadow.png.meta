@@ -58,7 +58,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -322,7 +322,15 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      game 2-shadow_0: -1059858104697797390
+      game 2-shadow_1: 1683576048441602524
+      game 2-shadow_2: -8679120309074700509
+      game 2-shadow_3: 2788740608019833718
+      game 2-shadow_4: -1614797020699207347
+      game 2-shadow_5: 2057435015189546344
+      game 2-shadow_6: -3986758869081948473
+      game 2-shadow_7: 2890428622564397069
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
