@@ -28,6 +28,17 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private TMP_Text statsText;
     [SerializeField] private TMP_Text statusText;
 
+    [Header("Notice Popup")]
+    [SerializeField] private GameObject noticePanel;
+    [SerializeField] private TMP_Text noticeText;
+    [SerializeField] private Button noticeOkButton;
+
+    [Header("Connection")]
+    [SerializeField] private float connectTimeoutSeconds = 6f;
+
+    private bool connectPending;
+    private float connectTimeoutAt;
+
     private void Start()
     {
         var audioManager = GameAudioManager.EnsureInstance();
@@ -67,13 +78,48 @@ public class LobbyUI : MonoBehaviour
         nicknameInput.onEndEdit.AddListener(OnNicknameChanged);
         CloseStats();
         InitializeSettingsUi();
+        InitializeNoticeUi();
         UpdateStats();
+
+        NetworkClient.OnDisconnectedEvent -= HandleClientDisconnected;
+        NetworkClient.OnDisconnectedEvent += HandleClientDisconnected;
+        NetworkClient.OnConnectedEvent -= HandleClientConnected;
+        NetworkClient.OnConnectedEvent += HandleClientConnected;
+
+        if (!string.IsNullOrEmpty(GameNetworkManager.LastDisconnectReason))
+        {
+            ShowNotice(GameNetworkManager.LastDisconnectReason);
+            GameNetworkManager.LastDisconnectReason = null;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        NetworkClient.OnDisconnectedEvent -= HandleClientDisconnected;
+        NetworkClient.OnConnectedEvent -= HandleClientConnected;
     }
 
     private void Update()
     {
+        if (connectPending && Time.unscaledTime >= connectTimeoutAt)
+        {
+            connectPending = false;
+            if (!NetworkClient.isConnected && !NetworkServer.active)
+            {
+                NetworkManager.singleton.StopClient();
+                ShowNotice("Не удалось подключиться к серверу. Проверьте IP-адрес и попробуйте снова.");
+                if (statusText != null) statusText.text = "";
+            }
+        }
+
         if (!Input.GetKeyDown(KeyCode.Escape))
             return;
+
+        if (noticePanel != null && noticePanel.activeSelf)
+        {
+            HideNotice();
+            return;
+        }
 
         if (exitConfirmPanel != null && exitConfirmPanel.activeSelf)
         {
@@ -125,7 +171,42 @@ public class LobbyUI : MonoBehaviour
             DatabaseManager.Instance.GetOrCreatePlayer(nick);
 
         statusText.text = "Запуск сервера...";
-        NetworkManager.singleton.StartHost();
+        GameNetworkManager.LastDisconnectReason = null;
+        try
+        {
+            NetworkManager.singleton.StartHost();
+        }
+        catch (System.Net.Sockets.SocketException ex)
+        {
+            Debug.LogWarning($"StartHost failed: {ex.Message}");
+            SafeStopHost();
+            statusText.text = "";
+            ShowNotice("Не удалось запустить сервер: порт уже занят. Попробуйте другой порт или закройте ранее запущенный сервер.");
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"StartHost failed: {ex.Message}");
+            SafeStopHost();
+            statusText.text = "";
+            ShowNotice("Не удалось запустить сервер: " + ex.Message);
+        }
+    }
+
+    private static void SafeStopHost()
+    {
+        try
+        {
+            if (NetworkServer.active && NetworkClient.isConnected)
+                NetworkManager.singleton.StopHost();
+            else if (NetworkServer.active)
+                NetworkManager.singleton.StopServer();
+            else if (NetworkClient.isConnected || NetworkClient.active)
+                NetworkManager.singleton.StopClient();
+        }
+        catch (System.Exception stopEx)
+        {
+            Debug.LogWarning($"SafeStopHost cleanup error: {stopEx.Message}");
+        }
     }
 
     private void OnConnect()
@@ -149,7 +230,47 @@ public class LobbyUI : MonoBehaviour
 
         NetworkManager.singleton.networkAddress = ip;
         statusText.text = "Подключение...";
-        NetworkManager.singleton.StartClient();
+        GameNetworkManager.LastDisconnectReason = null;
+        connectPending = true;
+        connectTimeoutAt = Time.unscaledTime + connectTimeoutSeconds;
+        try
+        {
+            NetworkManager.singleton.StartClient();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"StartClient failed: {ex.Message}");
+            connectPending = false;
+            SafeStopHost();
+            statusText.text = "";
+            ShowNotice("Не удалось подключиться к серверу: " + ex.Message);
+        }
+    }
+
+    private void HandleClientConnected()
+    {
+        connectPending = false;
+    }
+
+    private void HandleClientDisconnected()
+    {
+        bool wasPending = connectPending;
+        connectPending = false;
+
+        string reason = GameNetworkManager.LastDisconnectReason;
+        if (!string.IsNullOrEmpty(reason))
+        {
+            GameNetworkManager.LastDisconnectReason = null;
+            ShowNotice(reason);
+            if (statusText != null) statusText.text = "";
+            return;
+        }
+
+        if (wasPending)
+        {
+            ShowNotice("Не удалось подключиться к серверу. Проверьте IP-адрес и попробуйте снова.");
+            if (statusText != null) statusText.text = "";
+        }
     }
 
     public void OpenStats()
@@ -263,6 +384,44 @@ public class LobbyUI : MonoBehaviour
             NetworkManager.singleton.StopClient();
 
         Application.Quit();
+    }
+
+    private void InitializeNoticeUi()
+    {
+        if (noticePanel == null) return;
+
+        noticePanel.SetActive(false);
+        if (noticeOkButton != null)
+        {
+            noticeOkButton.onClick.RemoveAllListeners();
+            noticeOkButton.onClick.AddListener(GameAudioManager.PlayButtonClick);
+            noticeOkButton.onClick.AddListener(HideNotice);
+        }
+    }
+
+    public void ShowNotice(string message)
+    {
+        if (noticePanel == null || noticeText == null)
+        {
+            if (statusText != null) statusText.text = message;
+            Debug.LogWarning("LobbyUI noticePanel/noticeText are not assigned: " + message);
+            return;
+        }
+
+        noticeText.text = message;
+
+        if (settingsPanel != null) settingsPanel.SetActive(false);
+        if (exitConfirmPanel != null) exitConfirmPanel.SetActive(false);
+        if (statsPanel != null) statsPanel.SetActive(false);
+        if (centerPanel != null) centerPanel.SetActive(true);
+
+        noticePanel.SetActive(true);
+    }
+
+    private void HideNotice()
+    {
+        if (noticePanel == null) return;
+        noticePanel.SetActive(false);
     }
 
     private string BuildInstanceKey()

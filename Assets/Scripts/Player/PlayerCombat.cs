@@ -34,6 +34,12 @@ public class PlayerCombat : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
+        if (MatchManager.Instance != null && !MatchManager.Instance.HasStarted)
+        {
+            if (isHealing) CancelHealing();
+            return;
+        }
+
         bool pointerOverBlockingUi = IsPointerOverBlockingUi();
 
         if (isHealing)

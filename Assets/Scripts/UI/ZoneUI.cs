@@ -8,10 +8,26 @@ public class ZoneUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI phaseText;
     [SerializeField] private Image timerFill;
 
+    private const string WaitingForMatchStartText = "Зона активируется после старта матча";
+
     private void Update()
     {
         var zone = ZoneManager.Instance;
         if (zone == null) return;
+
+        if (MatchManager.Instance != null && !MatchManager.Instance.HasStarted)
+        {
+            if (timerText != null)
+                timerText.text = WaitingForMatchStartText;
+
+            if (phaseText != null)
+                phaseText.text = "Фаза --/--";
+
+            if (timerFill != null)
+                timerFill.fillAmount = 0f;
+
+            return;
+        }
 
         float timer = zone.PhaseTimer;
         int minutes = Mathf.FloorToInt(timer / 60f);

@@ -110,6 +110,9 @@ public class PlayerSpriteAnimator : NetworkBehaviour
 
         isDead = true;
 
+        if (spriteRenderer != null)
+            spriteRenderer.sortingOrder = -1;
+
         if (!EnsureAnimator())
         {
             if (spriteRenderer != null)

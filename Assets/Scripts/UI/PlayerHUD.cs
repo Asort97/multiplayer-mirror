@@ -49,6 +49,10 @@ public class PlayerHUD : NetworkBehaviour
     [SerializeField] private GameObject healProgressRoot;
     [SerializeField] private Image healProgressFill;
 
+    [Header("Match Countdown")]
+    [SerializeField] private GameObject countdownPanel;
+    [SerializeField] private TextMeshProUGUI countdownText;
+
     private PlayerHealth playerHealth;
     private PlayerInventory inventory;
     private bool deathShown;
@@ -125,6 +129,8 @@ public class PlayerHUD : NetworkBehaviour
         InitializeSettingsUi();
         if (healProgressRoot != null)
             healProgressRoot.SetActive(false);
+        if (countdownPanel != null)
+            countdownPanel.SetActive(false);
         UpdateNicknameLabel();
     }
 
@@ -213,6 +219,8 @@ public class PlayerHUD : NetworkBehaviour
         {
             aliveCountText.text = "Живых: " + MatchManager.Instance.aliveCount;
         }
+
+        UpdateCountdownUi();
 
         if (!deathShown && playerHealth != null && playerHealth.IsDead)
         {
@@ -402,6 +410,35 @@ public class PlayerHUD : NetworkBehaviour
 
         healProgressRoot.SetActive(visible);
         healProgressFill.fillAmount = Mathf.Clamp01(progress);
+    }
+
+    private void UpdateCountdownUi()
+    {
+        if (countdownPanel == null && countdownText == null)
+            return;
+
+        var match = MatchManager.Instance;
+        bool show = match != null && !match.HasStarted;
+
+        if (countdownPanel != null && countdownPanel.activeSelf != show)
+            countdownPanel.SetActive(show);
+
+        if (show && countdownText != null)
+        {
+            if (match.WaitingForPlayers)
+            {
+                int playersNeeded = match.PlayersNeededForCountdown;
+                countdownText.text = playersNeeded > 1
+                    ? $"Ожидание еще {playersNeeded} игроков"
+                    : "Ожидание второго игрока";
+            }
+            else
+            {
+                int seconds = Mathf.CeilToInt(match.RemainingCountdown);
+                if (seconds < 0) seconds = 0;
+                countdownText.text = seconds > 0 ? seconds.ToString() : "GO!";
+            }
+        }
     }
 
     private void UpdateNicknameLabel()

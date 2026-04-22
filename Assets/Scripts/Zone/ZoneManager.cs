@@ -88,6 +88,9 @@ public class ZoneManager : NetworkBehaviour
         if (!isServer) return;
         if (phases == null || phases.Length == 0) return;
 
+        if (MatchManager.Instance != null && !MatchManager.Instance.HasStarted)
+            return;
+
         if (!isFinished)
         {
             phaseTimer -= Time.deltaTime;

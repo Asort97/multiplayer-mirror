@@ -24,6 +24,14 @@ public class PlayerMovement : NetworkBehaviour
     {
         if (!isLocalPlayer) return;
 
+        if (MatchManager.Instance != null && !MatchManager.Instance.HasStarted)
+        {
+            moveInput = Vector2.zero;
+            GameAudioManager.StopCurrentLoop();
+            RotateTowardsMouse();
+            return;
+        }
+
         moveInput.x = Input.GetAxisRaw("Horizontal");
         moveInput.y = Input.GetAxisRaw("Vertical");
 
@@ -38,6 +46,12 @@ public class PlayerMovement : NetworkBehaviour
     private void FixedUpdate()
     {
         if (!isLocalPlayer) return;
+
+        if (MatchManager.Instance != null && !MatchManager.Instance.HasStarted)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
 
         rb.linearVelocity = moveInput.normalized * moveSpeed;
     }
