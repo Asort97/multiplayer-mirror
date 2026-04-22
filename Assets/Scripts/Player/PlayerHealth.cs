@@ -3,6 +3,8 @@ using Mirror;
 
 public class PlayerHealth : NetworkBehaviour
 {
+    private const string LogPrefix = "[PlayerHealth]";
+
     [SerializeField] private int maxHealth = 100;
 
     [SyncVar(hook = nameof(OnHealthChanged))]
@@ -17,11 +19,13 @@ public class PlayerHealth : NetworkBehaviour
 
     public override void OnStartServer()
     {
+        Debug.Log($"{LogPrefix} OnStartServer netId={netId} name='{gameObject.name}'");
         currentHealth = maxHealth;
     }
 
     public override void OnStartLocalPlayer()
     {
+        Debug.Log($"{LogPrefix} OnStartLocalPlayer netId={netId} name='{gameObject.name}' nick='{LobbyUI.LocalNickname}'");
         CmdSetName(LobbyUI.LocalNickname);
     }
 

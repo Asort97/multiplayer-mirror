@@ -3,9 +3,13 @@ using UnityEngine.UI;
 using Mirror;
 using TMPro;
 using System;
+using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class LobbyUI : MonoBehaviour
 {
+    private const string LogPrefix = "[LobbyUI]";
+
     public static string LocalNickname = "Player";
     private string instanceKey;
     [SerializeField] private GameObject centerPanel;
@@ -38,9 +42,12 @@ public class LobbyUI : MonoBehaviour
 
     private bool connectPending;
     private float connectTimeoutAt;
+    private Coroutine hostStartRoutine;
 
     private void Start()
     {
+        LogNetworkState("Start");
+
         var audioManager = GameAudioManager.EnsureInstance();
         audioManager.PlayMusic("menu_music");
 
@@ -95,8 +102,13 @@ public class LobbyUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        LogNetworkState("OnDestroy");
+
         NetworkClient.OnDisconnectedEvent -= HandleClientDisconnected;
         NetworkClient.OnConnectedEvent -= HandleClientConnected;
+
+        if (hostStartRoutine != null)
+            StopCoroutine(hostStartRoutine);
     }
 
     private void Update()
@@ -157,6 +169,8 @@ public class LobbyUI : MonoBehaviour
 
     private void OnHost()
     {
+        LogNetworkState("OnHost click");
+
         string nick = nicknameInput.text.Trim();
         if (string.IsNullOrEmpty(nick))
         {
@@ -170,11 +184,42 @@ public class LobbyUI : MonoBehaviour
         if (DatabaseManager.Instance != null)
             DatabaseManager.Instance.GetOrCreatePlayer(nick);
 
+        if (hostStartRoutine != null)
+            StopCoroutine(hostStartRoutine);
+
+        EnsureNetworkManagerPersists();
+        hostStartRoutine = StartCoroutine(StartHostRoutine());
+    }
+
+    private IEnumerator StartHostRoutine()
+    {
+        LogNetworkState("StartHostRoutine begin");
+
         statusText.text = "Запуск сервера...";
         GameNetworkManager.LastDisconnectReason = null;
+        connectPending = false;
+
+        SafeStopHost();
+        LogNetworkState("StartHostRoutine after SafeStopHost");
+
+        float waitUntil = Time.unscaledTime + 3f;
+        while (!IsNetworkOffline() && Time.unscaledTime < waitUntil)
+            yield return null;
+
+        if (!IsNetworkOffline())
+        {
+            Debug.LogWarning($"{LogPrefix} StartHostRoutine aborted because network is not offline yet.");
+            statusText.text = "";
+            ShowNotice("Сеть еще завершает предыдущее подключение. Подождите секунду и нажмите 'Создать игру' снова.");
+            hostStartRoutine = null;
+            yield break;
+        }
+
         try
         {
+            Debug.Log($"{LogPrefix} Calling StartHost()");
             NetworkManager.singleton.StartHost();
+            LogNetworkState("StartHost returned");
         }
         catch (System.Net.Sockets.SocketException ex)
         {
@@ -190,18 +235,72 @@ public class LobbyUI : MonoBehaviour
             statusText.text = "";
             ShowNotice("Не удалось запустить сервер: " + ex.Message);
         }
+        finally
+        {
+            hostStartRoutine = null;
+        }
+    }
+
+    private static bool IsNetworkOffline()
+    {
+        if (NetworkManager.singleton == null)
+            return true;
+
+        return !NetworkClient.active
+            && !NetworkServer.active
+            && NetworkManager.singleton.mode == NetworkManagerMode.Offline;
+    }
+
+    private static void EnsureNetworkManagerPersists()
+    {
+        if (NetworkManager.singleton == null)
+            return;
+
+        GameObject managerObject = NetworkManager.singleton.gameObject;
+        if (managerObject.scene.name == "DontDestroyOnLoad")
+            return;
+
+        Debug.Log($"{LogPrefix} Moving NetworkManager '{managerObject.name}' to DontDestroyOnLoad from scene '{managerObject.scene.name}'");
+        DontDestroyOnLoad(managerObject);
+    }
+
+    private void LogNetworkState(string label)
+    {
+        Debug.Log($"{LogPrefix} {label}: {DescribeNetworkState()}");
+    }
+
+    private static string DescribeNetworkState()
+    {
+        if (NetworkManager.singleton == null)
+            return "NetworkManager.singleton=null";
+
+        string connectionState = NetworkClient.connection == null
+            ? "conn=null"
+            : $"authenticated={NetworkClient.connection.isAuthenticated}, identity={(NetworkClient.connection.identity != null ? NetworkClient.connection.identity.netId.ToString() : "null")}";
+
+        string localPlayerState = NetworkClient.localPlayer != null
+            ? $"localPlayer={NetworkClient.localPlayer.netId}"
+            : "localPlayer=null";
+
+        return $"mode={NetworkManager.singleton.mode}, clientActive={NetworkClient.active}, clientConnected={NetworkClient.isConnected}, clientReady={NetworkClient.ready}, serverActive={NetworkServer.active}, networkAddress={NetworkManager.singleton.networkAddress}, {connectionState}, {localPlayerState}";
     }
 
     private static void SafeStopHost()
     {
         try
         {
+            if (NetworkManager.singleton != null)
+                Debug.Log($"{LogPrefix} SafeStopHost before stop: {DescribeNetworkState()}");
+
             if (NetworkServer.active && NetworkClient.isConnected)
                 NetworkManager.singleton.StopHost();
             else if (NetworkServer.active)
                 NetworkManager.singleton.StopServer();
             else if (NetworkClient.isConnected || NetworkClient.active)
                 NetworkManager.singleton.StopClient();
+
+            if (NetworkManager.singleton != null)
+                Debug.Log($"{LogPrefix} SafeStopHost after stop call: {DescribeNetworkState()}");
         }
         catch (System.Exception stopEx)
         {
@@ -211,6 +310,8 @@ public class LobbyUI : MonoBehaviour
 
     private void OnConnect()
     {
+        LogNetworkState("OnConnect click");
+
         string nick = nicknameInput.text.Trim();
         if (string.IsNullOrEmpty(nick))
         {
@@ -228,6 +329,15 @@ public class LobbyUI : MonoBehaviour
         if (string.IsNullOrEmpty(ip)) ip = "localhost";
         PlayerPrefs.SetString("LastIP", ip);
 
+        if (hostStartRoutine != null)
+        {
+            StopCoroutine(hostStartRoutine);
+            hostStartRoutine = null;
+        }
+
+        EnsureNetworkManagerPersists();
+        SafeStopHost();
+
         NetworkManager.singleton.networkAddress = ip;
         statusText.text = "Подключение...";
         GameNetworkManager.LastDisconnectReason = null;
@@ -235,7 +345,9 @@ public class LobbyUI : MonoBehaviour
         connectTimeoutAt = Time.unscaledTime + connectTimeoutSeconds;
         try
         {
+            Debug.Log($"{LogPrefix} Calling StartClient() to '{ip}'");
             NetworkManager.singleton.StartClient();
+            LogNetworkState("StartClient returned");
         }
         catch (System.Exception ex)
         {
@@ -249,11 +361,13 @@ public class LobbyUI : MonoBehaviour
 
     private void HandleClientConnected()
     {
+        LogNetworkState("HandleClientConnected");
         connectPending = false;
     }
 
     private void HandleClientDisconnected()
     {
+        LogNetworkState("HandleClientDisconnected");
         bool wasPending = connectPending;
         connectPending = false;
 
