@@ -8,7 +8,7 @@ public class LobbyUI : MonoBehaviour
 {
     public static string LocalNickname = "Player";
     private string instanceKey;
-
+    [SerializeField] private GameObject centerPanel;
     [SerializeField] private TMP_InputField nicknameInput;
     [SerializeField] private TMP_InputField ipInput;
     [SerializeField] private Button hostButton;
@@ -221,7 +221,7 @@ public class LobbyUI : MonoBehaviour
     {
         if (settingsPanel == null)
             return;
-
+        centerPanel.SetActive(false);
         settingsPanel.SetActive(true);
         HideExitConfirm();
     }
@@ -232,6 +232,7 @@ public class LobbyUI : MonoBehaviour
             return;
 
         HideExitConfirm();
+        centerPanel.SetActive(true);
         settingsPanel.SetActive(false);
     }
 
@@ -240,7 +241,8 @@ public class LobbyUI : MonoBehaviour
         if (settingsPanel == null || exitConfirmPanel == null)
             return;
 
-        settingsPanel.SetActive(true);
+        centerPanel.SetActive(false);
+        settingsPanel.SetActive(false);
         exitConfirmPanel.SetActive(true);
     }
 
@@ -249,6 +251,7 @@ public class LobbyUI : MonoBehaviour
         if (exitConfirmPanel == null)
             return;
 
+        settingsPanel.SetActive(true);
         exitConfirmPanel.SetActive(false);
     }
 

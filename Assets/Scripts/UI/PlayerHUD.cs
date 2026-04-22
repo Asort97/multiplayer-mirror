@@ -372,7 +372,7 @@ public class PlayerHUD : NetworkBehaviour
         if (settingsPanel == null || exitConfirmPanel == null)
             return;
 
-        settingsPanel.SetActive(true);
+        settingsPanel.SetActive(false);
         exitConfirmPanel.SetActive(true);
     }
 
@@ -381,6 +381,7 @@ public class PlayerHUD : NetworkBehaviour
         if (exitConfirmPanel == null)
             return;
 
+        settingsPanel.SetActive(true);
         exitConfirmPanel.SetActive(false);
     }
 

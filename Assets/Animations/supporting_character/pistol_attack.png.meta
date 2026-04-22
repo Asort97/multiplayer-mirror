@@ -130,10 +130,10 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 80
+        width: 79
         height: 41
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -150,12 +150,12 @@ TextureImporter:
       name: pistol_attack_1
       rect:
         serializedVersion: 2
-        x: 102
+        x: 103
         y: 4
-        width: 93
+        width: 101
         height: 33
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -169,37 +169,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: pistol_attack_2
-      rect:
-        serializedVersion: 2
-        x: 196
-        y: 21
-        width: 9
-        height: 6
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 850453d5eb6b9c9a0800000000000000
-      internalID: -6212233282257076136
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: pistol_attack_3
       rect:
         serializedVersion: 2
-        x: 203
+        x: 204
         y: 0
-        width: 81
+        width: 79
         height: 41
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -212,33 +190,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    - serializedVersion: 2
-      name: pistol_attack_4
-      rect:
-        serializedVersion: 2
-        x: 196
-        y: 11
-        width: 9
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 87ab925e0f1b6ec00800000000000000
-      internalID: 929626021293570680
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 216341061556c994b89c1250daa265ad
     internalID: 0
     vertices: []
     indices: 
