@@ -85,6 +85,9 @@ public class PlayerHUD : NetworkBehaviour
             if (t != null) nicknameText = t.GetComponent<TMP_Text>();
         }
 
+        BindSlotCounters();
+        ClearSlotCounters();
+
     }
 
     public override void OnStartLocalPlayer()
@@ -131,6 +134,7 @@ public class PlayerHUD : NetworkBehaviour
             healProgressRoot.SetActive(false);
         if (countdownPanel != null)
             countdownPanel.SetActive(false);
+        ClearSlotCounters();
         UpdateNicknameLabel();
     }
 
@@ -202,10 +206,19 @@ public class PlayerHUD : NetworkBehaviour
 
             if (i < slotAmmoTexts.Length && slotAmmoTexts[i] != null)
             {
-                if (item != null && item.itemType == ItemType.Ammo && i < inventory.slotAmmo.Count)
+                if (item != null && i < inventory.slotAmmo.Count)
                 {
-                    slotAmmoTexts[i].text = inventory.slotAmmo[i].ToString();
-                    slotAmmoTexts[i].enabled = true;
+                    bool stackableItem = item.itemType == ItemType.Ammo || item.itemType == ItemType.Heal;
+                    if (stackableItem && inventory.slotAmmo[i] > 1)
+                    {
+                        slotAmmoTexts[i].text = $"x{inventory.slotAmmo[i]}";
+                        slotAmmoTexts[i].enabled = true;
+                    }
+                    else
+                    {
+                        slotAmmoTexts[i].text = "";
+                        slotAmmoTexts[i].enabled = false;
+                    }
                 }
                 else
                 {
@@ -238,6 +251,31 @@ public class PlayerHUD : NetworkBehaviour
                 Destroy(killFeedEntries[i].obj);
                 killFeedEntries.RemoveAt(i);
             }
+        }
+    }
+
+    private void BindSlotCounters()
+    {
+        for (int i = 0; i < slotAmmoTexts.Length && i < slotImages.Length; i++)
+        {
+            if (slotAmmoTexts[i] != null || slotImages[i] == null)
+                continue;
+
+            Transform counter = slotImages[i].transform.Find("counter");
+            if (counter != null)
+                slotAmmoTexts[i] = counter.GetComponent<TextMeshProUGUI>();
+        }
+    }
+
+    private void ClearSlotCounters()
+    {
+        for (int i = 0; i < slotAmmoTexts.Length; i++)
+        {
+            if (slotAmmoTexts[i] == null)
+                continue;
+
+            slotAmmoTexts[i].text = "";
+            slotAmmoTexts[i].enabled = false;
         }
     }
 

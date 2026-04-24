@@ -124,6 +124,16 @@ public class GameNetworkManager : NetworkManager
         }
     }
 
+    public override void OnServerDisconnect(NetworkConnectionToClient conn)
+    {
+        Debug.Log($"{LogPrefix} OnServerDisconnect connId={conn.connectionId} hasIdentity={conn.identity != null}");
+
+        if (MatchManager.Instance != null && conn.identity != null)
+            MatchManager.Instance.OnPlayerDisconnected(conn.identity);
+
+        base.OnServerDisconnect(conn);
+    }
+
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
         Debug.Log($"{LogPrefix} OnServerAddPlayer start connId={conn.connectionId} hasIdentity={conn.identity != null} playerPrefab={(playerPrefab != null ? playerPrefab.name : "null")} autoCreatePlayer={autoCreatePlayer}");

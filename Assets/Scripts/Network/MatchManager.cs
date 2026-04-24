@@ -83,6 +83,34 @@ public class MatchManager : NetworkBehaviour
     }
 
     [Server]
+    public void OnPlayerDisconnected(NetworkIdentity player)
+    {
+        if (player == null)
+            return;
+
+        string playerName = GetPlayerName(player);
+        bool wasAlive = alivePlayers.Remove(player);
+
+        if (playerKills.ContainsKey(player))
+            playerKills.Remove(player);
+
+        if (!wasAlive)
+            return;
+
+        aliveCount = alivePlayers.Count;
+        RpcShowKillFeed(playerName + " покинул игру");
+
+        if (state == MatchState.Countdown && alivePlayers.Count < minPlayersForCountdown)
+        {
+            state = MatchState.WaitingForPlayers;
+            countdownEndTime = 0;
+            return;
+        }
+
+        TryResolveMatchEnd();
+    }
+
+    [Server]
     public void OnPlayerKilled(NetworkIdentity victim, NetworkIdentity attacker)
     {
         if (alivePlayers.Contains(victim))
@@ -106,6 +134,12 @@ public class MatchManager : NetworkBehaviour
         else
             RpcShowKillFeed(victimName + " погиб от зоны");
 
+        TryResolveMatchEnd();
+    }
+
+    [Server]
+    private void TryResolveMatchEnd()
+    {
         if (state != MatchState.InProgress) return;
 
         if (!matchEnded && aliveCount == 1 && alivePlayers.Count == 1)

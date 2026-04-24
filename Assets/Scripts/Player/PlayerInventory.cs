@@ -122,6 +122,20 @@ public class PlayerInventory : NetworkBehaviour
             return true;
         }
 
+        if (data.itemType == ItemType.Heal)
+        {
+            int stackAmount = ammo > 0 ? ammo : 1;
+
+            for (int i = 0; i < SlotCount; i++)
+            {
+                if (slotItemNames[i] == itemName)
+                {
+                    slotAmmo[i] += stackAmount;
+                    return true;
+                }
+            }
+        }
+
         for (int i = 0; i < SlotCount; i++)
         {
             if (slotItemNames[i] == itemName)
@@ -133,7 +147,7 @@ public class PlayerInventory : NetworkBehaviour
             if (string.IsNullOrEmpty(slotItemNames[i]))
             {
                 slotItemNames[i] = itemName;
-                slotAmmo[i] = 0;
+                slotAmmo[i] = data.itemType == ItemType.Heal ? Mathf.Max(1, ammo) : 0;
 
                 if (data.itemType == ItemType.Ranged && data.ammoType != AmmoType.None)
                 {
@@ -243,6 +257,13 @@ public class PlayerInventory : NetworkBehaviour
     [Server]
     public void ConsumeCurrentItem()
     {
+        var item = GetActiveItemData();
+        if (item != null && item.itemType == ItemType.Heal && slotAmmo[activeSlot] > 1)
+        {
+            slotAmmo[activeSlot]--;
+            return;
+        }
+
         slotItemNames[activeSlot] = "";
         slotAmmo[activeSlot] = 0;
     }
